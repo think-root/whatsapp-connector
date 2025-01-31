@@ -23,13 +23,15 @@ jobs:
             set -e
             
             # Docker setup optimization - combine checks and actions
-            if ! systemctl is-active --quiet docker || [ ! -e /var/run/docker.sock ]; then
-              sudo systemctl start docker
+            if ! command -v docker &> /dev/null || ! systemctl is-active --quiet docker || [ ! -e /var/run/docker.sock ]; then
+              DEBIAN_FRONTEND=noninteractive
+              SUDO_COMMAND='echo "${{ secrets.SSH_PASSWORD }}" | sudo -S'
+              $SUDO_COMMAND systemctl start docker
               sleep 3
             fi
             
-            sudo chmod 666 /var/run/docker.sock
-            sudo usermod -aG docker $USER
+            $SUDO_COMMAND chmod 666 /var/run/docker.sock
+            $SUDO_COMMAND usermod -aG docker $USER
 
             # Variables setup
             REPO_NAME="${{ github.repository }}"
@@ -54,5 +56,4 @@ jobs:
             echo "${{ secrets.ENV_PROD }}" > .env
             docker rm -f wapp || true
             docker compose up -d --build --remove-orphans
-
             echo "Deployment successful!"
