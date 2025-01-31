@@ -1,18 +1,8 @@
-FROM oven/bun:alpine
+FROM node:alpine
 WORKDIR /app
-
-# Install build dependencies
-RUN apk add --no-cache git build-base python3
-
-# Copy package files
+RUN apk add --no-cache git
 COPY package*.json ./
-
-# Install dependencies with Bun
-RUN bun install --frozen-lockfile
-
-# Copy rest of the application
+RUN npm install
 COPY . .
-
 EXPOSE 9010
-
-CMD ["bun", "start"]
+CMD ["npm", "start"]
