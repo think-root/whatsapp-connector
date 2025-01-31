@@ -1,3 +1,3 @@
 # wapp
 
-Essentially a wrapper around [Baileys](https://github.com/WhiskeySockets/Baileys/) for automatically publishing posts to WhatsApp channel and some other personal needs.
+This is essentially a wrapper around [Baileys](https://github.com/WhiskeySockets/Baileys/) that serves as an API server providing endpoints for WhatsApp automation.
