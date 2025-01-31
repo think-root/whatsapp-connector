@@ -5,6 +5,7 @@ import makeWASocket, {
   DisconnectReason,
   useMultiFileAuthState,
   proto,
+  Browsers,
 } from "@whiskeysockets/baileys";
 import { Boom } from "@hapi/boom";
 import dotenv from "dotenv";
@@ -22,6 +23,7 @@ async function initializeWA() {
   sock = makeWASocket({
     printQRInTerminal: true,
     auth: state,
+    browser: Browsers.windows("Desktop"),
   });
 
   sock.ev.on(
@@ -71,6 +73,8 @@ app.post("/wapp/update-status", async (c) => {
       },
       500
     );
+  } finally {
+    await sock.sendPresenceUpdate("unavailable");
   }
 });
 
@@ -157,11 +161,16 @@ app.post("/wapp/send-message", async (c) => {
       },
       500
     );
+  } finally {
+    await sock.sendPresenceUpdate("unavailable");
   }
 });
+
 initializeWA();
+
 serve({
   fetch: app.fetch,
   port: PORT ? PORT : 3000,
 });
+
 console.log(`✨ Server started successfully on http://localhost:${PORT}`);
