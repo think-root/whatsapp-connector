@@ -1,8 +1,18 @@
 FROM oven/bun:alpine
 WORKDIR /app
-RUN apk add --no-cache git
+
+# Install build dependencies
+RUN apk add --no-cache git build-base python3
+
+# Copy package files
 COPY package*.json ./
-RUN bun install
+
+# Install dependencies with Bun
+RUN bun install --frozen-lockfile
+
+# Copy rest of the application
 COPY . .
+
 EXPOSE 9010
+
 CMD ["bun", "start"]
