@@ -1,0 +1,12 @@
+services:
+  wapp:
+    build: .
+    image: wapp
+    container_name: wapp
+    ports:
+      - "9010:9010"
+    env_file:
+      - .env
+    environment:
+      TZ: Europe/Kiev
+    restart: always

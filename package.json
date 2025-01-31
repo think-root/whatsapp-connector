@@ -1,0 +1,28 @@
+{
+  "name": "wapp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsc && node dist/index.js",
+    "build": "tsc",
+    "dev": "tsc -w"
+  },
+  "keywords": [],
+  "author": "sigmanor",
+  "license": "MIT",
+  "description": "",
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@hapi/boom": "^10.0.1",
+    "@hono/node-server": "^1.13.7",
+    "@whiskeysockets/baileys": "^6.7.9",
+    "baileys": "github:whiskeysockets/baileys#feature/newsletter",
+    "dotenv": "^16.4.7",
+    "hono": "^4.6.19",
+    "link-preview-js": "^3.0.13",
+    "qrcode-terminal": "^0.12.0"
+  }
+}
