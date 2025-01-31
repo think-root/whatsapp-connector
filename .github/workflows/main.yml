@@ -51,15 +51,15 @@ jobs:
 
             REPO_NAME="${{ github.repository }}"
             REPO_FOLDER="$HOME/apps/${REPO_NAME##*/}"
-            BACKUP_FOLDER="$HOME/apps/my_session_backup"
+            BACKUP_FOLDER="$HOME/apps/auth_info_baileys_backup"
 
             echo "Deploying $REPO_NAME to $REPO_FOLDER"
 
-            if [ -d "$REPO_FOLDER/my_session" ]; then
-              echo "Backing up my_session folder..."
+            if [ -d "$REPO_FOLDER/auth_info_baileys" ]; then
+              echo "Backing up auth_info_baileys folder..."
               mkdir -p "$BACKUP_FOLDER"
               rm -rf "$BACKUP_FOLDER/*"
-              cp -r "$REPO_FOLDER/my_session" "$BACKUP_FOLDER/"
+              cp -r "$REPO_FOLDER/auth_info_baileys" "$BACKUP_FOLDER/"
             fi
 
             if ! command -v docker >/dev/null 2>&1; then
@@ -76,16 +76,16 @@ jobs:
             echo "Cloning new version of the repository..."
             git clone "https://github.com/${{ github.repository }}.git" "$REPO_FOLDER"
 
-            if [ -d "$BACKUP_FOLDER/my_session" ]; then
-              echo "Restoring my_session folder from backup..."
-              cp -r "$BACKUP_FOLDER/my_session" "$REPO_FOLDER/"
+            if [ -d "$BACKUP_FOLDER/auth_info_baileys" ]; then
+              echo "Restoring auth_info_baileys folder from backup..."
+              cp -r "$BACKUP_FOLDER/auth_info_baileys" "$REPO_FOLDER/"
             fi
 
             cd "$REPO_FOLDER"
 
             echo "Setting up .env file..."
             echo "${{ secrets.ENV_PROD }}" > .env
-            
+
             if docker inspect wapp >/dev/null 2>&1; then
               echo "Stopping and removing existing container..."
               docker rm -f wapp
