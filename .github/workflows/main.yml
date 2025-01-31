@@ -22,17 +22,22 @@ jobs:
           script: |
             set -e
             
-            # Docker setup optimization - combine checks and actions
-            if ! command -v docker &> /dev/null || ! systemctl is-active --quiet docker || [ ! -e /var/run/docker.sock ]; then
-              DEBIAN_FRONTEND=noninteractive
-              SUDO_COMMAND='echo "${{ secrets.SSH_PASSWORD }}" | sudo -S'
+            # Docker setup with proper permission handling
+            SUDO_COMMAND='echo "${{ secrets.SSH_PASSWORD }}" | sudo -S'
+            
+            if ! systemctl is-active --quiet docker || [ ! -e /var/run/docker.sock ]; then
               $SUDO_COMMAND systemctl start docker
               sleep 3
             fi
             
-            $SUDO_COMMAND chmod 666 /var/run/docker.sock
+            # Ensure proper Docker socket permissions
+            $SUDO_COMMAND chown root:docker /var/run/docker.sock
+            $SUDO_COMMAND chmod 660 /var/run/docker.sock
+            
+            # Add current user to docker group and refresh group membership
             $SUDO_COMMAND usermod -aG docker $USER
-
+            newgrp docker
+            
             # Variables setup
             REPO_NAME="${{ github.repository }}"
             REPO_FOLDER="$HOME/apps/${REPO_NAME##*/}"
@@ -55,5 +60,4 @@ jobs:
             cd "$REPO_FOLDER"
             echo "${{ secrets.ENV_PROD }}" > .env
             docker rm -f wapp || true
-            docker compose up -d --build --remove-orphans
-            echo "Deployment successful!"
+            docker compose up -d --build --remove-orphans            echo "Deployment successful!"
