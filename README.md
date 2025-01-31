@@ -1,8 +1,8 @@
 # wapp
 
-This repository is part of [chappie_bot](https://github.com/Think-Root/chappie_bot) repository. For the correct working of **chappie_bot**, this app must also be running, if you are ready to risk losing your WhatsApp account. If not, just remove the **SendMessageToWhatsApp** function call from **chappie_bot**
+This repository is part of the [chappie_bot](https://github.com/Think-Root/chappie_bot) repository. For **chappie_bot** to work correctly, this app must also be running if you are willing to risk losing your WhatsApp account. If not, simply remove the **SendMessageToWhatsApp** function call from **chappie_bot**.
 
-Essentially a wrapper around [Baileys](https://github.com/WhiskeySockets/Baileys/) that serves as an API server providing endpoints for WhatsApp automation.
+Wapp is essentially a wrapper around [Baileys](https://github.com/WhiskeySockets/Baileys/) that serves as an API server providing endpoints for WhatsApp automation.
 
 ## How to run
 
@@ -19,7 +19,7 @@ git clone https://github.com/Think-Root/wapp.git
 
 ### Config
 
-create a **.env** file in the app root directory
+Create a **.env** file in the app root directory
 
 ```properties
 AUTH_TOKEN=<your bearer token>
