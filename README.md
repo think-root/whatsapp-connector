@@ -1,6 +1,6 @@
 # wapp
 
-This repository is part of the [chappie_bot](https://github.com/Think-Root/chappie_bot) repository. For **chappie_bot** to work correctly, this app must also be running if you are willing to risk losing your WhatsApp account. If not, simply remove the **SendMessageToWhatsApp** function call from **chappie_bot**.
+This repository is part of the [chappie_bot](https://github.com/Think-Root/chappie_bot) repository. For **chappie_bot** to work correctly, this app must also be running if you are willing to risk losing your WhatsApp account. If not, simply remove the **SendMessageToWhatsApp** function call from **chappie_bot** and forget this repository.
 
 Wapp is essentially a wrapper around [Baileys](https://github.com/WhiskeySockets/Baileys/) that serves as an API server providing endpoints for WhatsApp automation.
 
