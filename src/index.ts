@@ -12,6 +12,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = new Hono();
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
 let sock: any = null;
 
 app.use("/wapp/*", bearerAuth({ token: process.env.AUTH_TOKEN ?? "" }));
@@ -47,37 +48,48 @@ app.post("/wapp/send-message", async (c) => {
     const { type, jid, text } = body;
 
     if (!type) {
-      return c.json({
-        success: false,
-        error: "Message type is required (chat or channel)"
-      }, 400);
+      return c.json(
+        {
+          success: false,
+          error: "Message type is required (chat or channel)",
+        },
+        400
+      );
     }
 
-    if (type === 'chat') {
+    if (type === "chat") {
       if (!jid || !text) {
-        return c.json({
-          success: false,
-          error: "Both JID and text are required for chat messages"
-        }, 400);
+        return c.json(
+          {
+            success: false,
+            error: "Both JID and text are required for chat messages",
+          },
+          400
+        );
       }
       await sock.sendMessage(jid, { text });
-    } 
-    else if (type === 'channel') {
+    } else if (type === "channel") {
       if (!text) {
-        return c.json({
-          success: false,
-          error: "text is required for channel messages"
-        }, 400);
+        return c.json(
+          {
+            success: false,
+            error: "text is required for channel messages",
+          },
+          400
+        );
       }
 
       if (!jid) {
-        return c.json({
-          success: false,
-          error: "jid is required for channel messages"
-        }, 500);
+        return c.json(
+          {
+            success: false,
+            error: "jid is required for channel messages",
+          },
+          500
+        );
       }
 
-      const msg = { conversation: text }
+      const msg = { conversation: text };
       const plaintext = proto.Message.encode(msg).finish();
       const plaintextNode = {
         tag: "plaintext",
@@ -91,28 +103,33 @@ app.post("/wapp/send-message", async (c) => {
       };
 
       await sock.query(node);
-    }
-    else {
-      return c.json({
-        success: false,
-        error: "Invalid message type. Use 'chat' or 'channel'"
-      }, 400);
+    } else {
+      return c.json(
+        {
+          success: false,
+          error: "Invalid message type. Use 'chat' or 'channel'",
+        },
+        400
+      );
     }
 
     return c.json({
       success: true,
-      message: "Message sent successfully"
+      message: "Message sent successfully",
     });
   } catch (error) {
-    return c.json({
-      success: false,
-      error: "Failed to send message"
-    }, 500);
+    return c.json(
+      {
+        success: false,
+        error: "Failed to send message",
+      },
+      500
+    );
   }
 });
 initializeWA();
 serve({
   fetch: app.fetch,
-  port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
+  port: PORT ? PORT : 3000,
 });
-console.log("Server is running on port " + process.env.PORT);
+console.log(`✨ Server started successfully on http://localhost:${PORT}`);
