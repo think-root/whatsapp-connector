@@ -24,6 +24,7 @@ async function initializeWA() {
     printQRInTerminal: true,
     auth: state,
     browser: Browsers.windows("Desktop"),
+    syncFullHistory: true
   });
 
   sock.ev.on(
