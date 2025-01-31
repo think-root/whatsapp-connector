@@ -1,0 +1,58 @@
+name: CI/CD wapp
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Execute remote commands via SSH
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          script: |
+            set -e
+            
+            # Docker setup optimization - combine checks and actions
+            if ! systemctl is-active --quiet docker || [ ! -e /var/run/docker.sock ]; then
+              sudo systemctl start docker
+              sleep 3
+            fi
+            
+            sudo chmod 666 /var/run/docker.sock
+            sudo usermod -aG docker $USER
+
+            # Variables setup
+            REPO_NAME="${{ github.repository }}"
+            REPO_FOLDER="$HOME/apps/${REPO_NAME##*/}"
+            BACKUP_FOLDER="$HOME/apps/auth_info_baileys_backup"
+            
+            # Backup handling
+            if [ -d "$REPO_FOLDER/auth_info_baileys" ]; then
+              mkdir -p "$BACKUP_FOLDER"
+              rsync -a --delete "$REPO_FOLDER/auth_info_baileys/" "$BACKUP_FOLDER/auth_info_baileys/"
+            fi
+
+            # Repository cleanup and setup
+            rm -rf "$REPO_FOLDER"
+            git clone --depth 1 "https://github.com/${{ github.repository }}.git" "$REPO_FOLDER"
+            
+            # Restore backup if exists
+            [ -d "$BACKUP_FOLDER/auth_info_baileys" ] && cp -r "$BACKUP_FOLDER/auth_info_baileys" "$REPO_FOLDER/"
+            
+            # Deploy application
+            cd "$REPO_FOLDER"
+            echo "${{ secrets.ENV_PROD }}" > .env
+            docker rm -f wapp || true
+            docker compose up -d --build --remove-orphans
+
+            echo "Deployment successful!"
