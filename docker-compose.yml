@@ -10,3 +10,9 @@ services:
     environment:
       TZ: Europe/Kiev
     restart: always
+    networks:
+      - chappie_network
+
+networks:
+  chappie_network:
+    external: true
