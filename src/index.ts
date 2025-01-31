@@ -42,6 +42,38 @@ async function initializeWA() {
   sock.ev.on("creds.update", saveCreds);
 }
 
+app.post("/wapp/update-status", async (c) => {
+  try {
+    const body = await c.req.json();
+    const { text } = body;
+
+    if (!text) {
+      return c.json(
+        {
+          success: false,
+          error: "Status text is required",
+        },
+        400
+      );
+    }
+
+    await sock.updateProfileStatus(text);
+
+    return c.json({
+      success: true,
+      message: "Status updated successfully",
+    });
+  } catch (error) {
+    return c.json(
+      {
+        success: false,
+        error: "Failed to update status",
+      },
+      500
+    );
+  }
+});
+
 app.post("/wapp/send-message", async (c) => {
   try {
     const body = await c.req.json();
