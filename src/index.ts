@@ -1,177 +1,74 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { bearerAuth } from "hono/bearer-auth";
-import makeWASocket, {
-  DisconnectReason,
-  useMultiFileAuthState,
-  proto,
-  Browsers,
-} from "@whiskeysockets/baileys";
-import { Boom } from "@hapi/boom";
-import dotenv from "dotenv";
-
-dotenv.config();
+import { config } from "./config";
+import { whatsAppService } from "./services/whatsapp";
+import { errorHandler } from "./middleware/error";
+import { MessageRequest, StatusRequest } from "./types";
 
 const app = new Hono();
-const PORT = process.env.PORT ? parseInt(process.env.PORT) : 3000;
-let sock: any = null;
 
-app.use("/wapp/*", bearerAuth({ token: process.env.AUTH_TOKEN ?? "" }));
-async function initializeWA() {
-  const { state, saveCreds } = await useMultiFileAuthState("auth_info_baileys");
-
-  sock = makeWASocket({
-    printQRInTerminal: true,
-    auth: state,
-    browser: Browsers.windows("Desktop"),
-    syncFullHistory: true
-  });
-
-  sock.ev.on(
-    "connection.update",
-    async (update: { connection?: string; lastDisconnect?: { error?: Boom } }) => {
-      const { connection, lastDisconnect } = update;
-
-      if (connection === "close") {
-        const shouldReconnect =
-          (lastDisconnect?.error as Boom)?.output?.statusCode !== DisconnectReason.loggedOut;
-        if (shouldReconnect) {
-          initializeWA();
-        }
-      }
-    }
-  );
-
-  sock.ev.on("creds.update", saveCreds);
-}
+app.use("*", errorHandler);
+app.use("/wapp/*", bearerAuth({ token: config.authToken }));
 
 app.post("/wapp/update-status", async (c) => {
-  try {
-    const body = await c.req.json();
-    const { text } = body;
+  const body = await c.req.json<StatusRequest>();
 
-    if (!text) {
-      return c.json(
-        {
-          success: false,
-          error: "Status text is required",
-        },
-        400
-      );
-    }
-
-    await sock.updateProfileStatus(text);
-
-    return c.json({
-      success: true,
-      message: "Status updated successfully",
-    });
-  } catch (error) {
+  if (!body.text) {
     return c.json(
       {
         success: false,
-        error: "Failed to update status",
+        error: "Status text is required",
       },
-      500
+      400
     );
-  } finally {
-    await sock.sendPresenceUpdate("unavailable");
   }
+
+  await whatsAppService.updateStatus(body.text);
+
+  return c.json({
+    success: true,
+    message: "Status updated successfully",
+  });
 });
 
 app.post("/wapp/send-message", async (c) => {
-  try {
-    const body = await c.req.json();
-    const { type, jid, text } = body;
+  const body = await c.req.json<MessageRequest>();
+  const { type, jid, text } = body;
 
-    if (!type) {
-      return c.json(
-        {
-          success: false,
-          error: "Message type is required (chat or channel)",
-        },
-        400
-      );
-    }
-
-    if (type === "chat") {
-      if (!jid || !text) {
-        return c.json(
-          {
-            success: false,
-            error: "Both JID and text are required for chat messages",
-          },
-          400
-        );
-      }
-      await sock.sendMessage(jid, { text });
-    } else if (type === "channel") {
-      if (!text) {
-        return c.json(
-          {
-            success: false,
-            error: "text is required for channel messages",
-          },
-          400
-        );
-      }
-
-      if (!jid) {
-        return c.json(
-          {
-            success: false,
-            error: "jid is required for channel messages",
-          },
-          500
-        );
-      }
-
-      const msg = { conversation: text };
-      const plaintext = proto.Message.encode(msg).finish();
-      const plaintextNode = {
-        tag: "plaintext",
-        attrs: {},
-        content: plaintext,
-      };
-      const node = {
-        tag: "message",
-        attrs: { to: jid, type: "text" },
-        content: [plaintextNode],
-      };
-
-      await sock.query(node);
-    } else {
-      return c.json(
-        {
-          success: false,
-          error: "Invalid message type. Use 'chat' or 'channel'",
-        },
-        400
-      );
-    }
-
-    return c.json({
-      success: true,
-      message: "Message sent successfully",
-    });
-  } catch (error) {
+  if (!type || !["chat", "channel"].includes(type)) {
     return c.json(
       {
         success: false,
-        error: "Failed to send message",
+        error: "Valid message type is required (chat or channel)",
       },
-      500
+      400
     );
-  } finally {
-    await sock.sendPresenceUpdate("unavailable");
   }
+
+  if (!jid || !text) {
+    return c.json(
+      {
+        success: false,
+        error: "Both JID and text are required",
+      },
+      400
+    );
+  }
+
+  await whatsAppService.sendMessage(body);
+
+  return c.json({
+    success: true,
+    message: "Message sent successfully",
+  });
 });
 
-initializeWA();
+whatsAppService.initialize();
 
 serve({
   fetch: app.fetch,
-  port: PORT ? PORT : 3000,
+  port: config.port,
 });
 
-console.log(`✨ Server started successfully on http://localhost:${PORT}`);
+console.log(`✨ Server started successfully on http://localhost:${config.port}`);
