@@ -10,7 +10,6 @@ Wapp is essentially a wrapper around [Baileys](https://github.com/WhiskeySockets
 
 - [docker](https://docs.docker.com/engine/install/) or/and [docker-compose](https://docs.docker.com/compose/install/)
 
-
 ### Clone repo
 
 ```shell
@@ -29,5 +28,5 @@ PORT=<server port, 3000 if leave empty>
 ### Deploy
 
 - build `docker build -t wapp:latest -f Dockerfile .`
-- run `docker run --name wapp --restart always --env-file .env -e TZ=Europe/Kiev --network chappie_network wapp:latest`
+- run `docker run --name wapp --restart always --env-file .env -e TZ=Europe/Kiev --network think-root-network wapp:latest`
 - or via docker compose `docker compose up -d`

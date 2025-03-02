@@ -11,8 +11,8 @@ services:
       TZ: Europe/Kiev
     restart: always
     networks:
-      - chappie_network
+      - think-root-network
 
 networks:
-  chappie_network:
+  think-root-network:
     external: true
