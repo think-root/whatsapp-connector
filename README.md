@@ -1,4 +1,4 @@
-# wapp
+# What's up?
 
 This repository is part of the [chappie_bot](https://github.com/Think-Root/chappie_bot) repository. For **chappie_bot** to work correctly, this app must also be running if you are willing to risk losing your WhatsApp account. If not, simply remove the **SendMessageToWhatsApp** function call from **chappie_bot** and forget this repository.
 
