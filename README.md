@@ -1,8 +1,6 @@
 # What's up?
 
-This repository is part of the [chappie_bot](https://github.com/Think-Root/chappie_bot) repository. For **chappie_bot** to work correctly, this app must also be running if you are willing to risk losing your WhatsApp account. If not, simply remove the **SendMessageToWhatsApp** function call from **chappie_bot** and forget this repository.
-
-Wapp is essentially a wrapper around [Baileys](https://github.com/WhiskeySockets/Baileys/) that serves as an API server providing endpoints for WhatsApp automation.
+This repository is part of the [content-alchemist](https://github.com/think-root/content-alchemist) repository. If you want to have whatsapp integration, and you are not afraid of losing your whatsapp account (because it is an unofficial integration), then you also need to deploy this app. This is essentially a wrapper around [Baileys](https://github.com/WhiskeySockets/Baileys/) that serves as an API server providing endpoints for WhatsApp automation.
 
 ## How to run
 
@@ -13,7 +11,7 @@ Wapp is essentially a wrapper around [Baileys](https://github.com/WhiskeySockets
 ### Clone repo
 
 ```shell
-git clone https://github.com/Think-Root/wapp.git
+git clone https://github.com/think-root/whatsapp-connector.git
 ```
 
 ### Config
