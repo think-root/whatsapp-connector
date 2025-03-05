@@ -1,8 +1,8 @@
 services:
-  wapp:
+  whatsapp-connector:
     build: .
-    image: wapp
-    container_name: wapp
+    image: whatsapp-connector
+    container_name: whatsapp-connector
     ports:
       - "9010:9010"
     env_file:
