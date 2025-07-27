@@ -18,7 +18,7 @@
   "dependencies": {
     "@hapi/boom": "^10.0.1",
     "@hono/node-server": "^1.13.7",
-    "@whiskeysockets/baileys": "^6.7.9",
+    "@whiskeysockets/baileys": "^6.7.18",
     "baileys": "github:whiskeysockets/baileys#feature/newsletter",
     "dotenv": "^16.4.7",
     "hono": "^4.6.19",
