@@ -1,75 +1,82 @@
 # What's up?
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Node.js Version](https://img.shields.io/badge/node-%3E%3D%2020-brightgreen.svg)](https://nodejs.org/)
-[![Maintenance](https://img.shields.io/maintenance/yes/2025)](https://github.com/think-root/whatsapp-connector)
-[![Docker](https://img.shields.io/badge/docker-ready-blue.svg)](https://www.docker.com/)
+This project is part of the [content-maestro](https://github.com/think-root/content-maestro) repository. If you want WhatsApp integration and automatic publishing of posts there as well, you need to deploy this app.
 
-This repository is part of the [content-maestro](https://github.com/think-root/content-maestro) project. If you want to have WhatsApp integration and are not concerned about potentially **losing your WhatsApp account** (as it is an unofficial integration), you also need to deploy this app. This is essentially a wrapper around [Baileys](https://github.com/WhiskeySockets/Baileys/) that serves as an API server providing endpoints for WhatsApp automation.
+> [!WARNING]
+> This integration relies on unofficial WhatsApp APIs and may lead to a permanent ban of the account. Proceed only if you fully accept that risk.
 
-## How to run
+## Description
 
-### Requirements
+The app runs an Express.js server that shares a single WhatsApp session via HTTP endpoints. It authenticates requests using a shared bearer token, exposes utilities for updating the WhatsApp status, and sends individual or channel messages. When the service starts, it prints a QR code to the console that must be scanned with the WhatsApp account that will own the session.
 
-- [docker](https://docs.docker.com/engine/install/) or/and [docker-compose](https://docs.docker.com/compose/install/)
+## Prerequisites
 
-### Clone repo
+- Node.js 20+
 
-```shell
-git clone https://github.com/think-root/whatsapp-connector.git
-```
+## Setup
 
-### Config
+1. **Clone the repository**
 
-Create a **.env** file in the app root directory
+2. **Install dependencies**
 
-```properties
-AUTH_TOKEN=<your bearer token>
-PORT=<server port, 3000 if leave empty>
-```
+   ```bash
+   npm install
+   ```
 
-### Deploy
+3. **Create a `.env` file in the project root with the required variables**
 
-- build `docker build -t whatsapp-connector:latest -f Dockerfile .`
-- run `docker run --name whatsapp-connector --restart always --env-file .env -e TZ=Europe/Kiev --network think-root-network whatsapp-connector:latest`
-- or via docker compose `docker compose up -d`
+   ```properties
+   AUTH_TOKEN=your_shared_bearer_token
+   PORT=3000
+   ```
 
-### Authorization
+   Leaving `PORT` empty defaults the server to port `3000`.
 
-When launching the app, you will see a QR code in the console that you need to scan with your phone.
+4. **Run the server**
+
+   ```bash
+   npm start
+   ```
+
+   The first launch displays a QR code in the console—scan it with the WhatsApp account you plan to automate.
 
 ## API
 
+All endpoints live under the same bearer-protected server and return JSON payloads.
+
 ### Authentication
 
-All API endpoints require authentication using a Bearer token. This token should match the `AUTH_TOKEN` value in your `.env` file.
+| Header | Type | Required | Description |
+|--------|------|----------|-------------|
+| `Authorization` | string | Yes | `Bearer <AUTH_TOKEN>` value from `.env` |
 
-Include the token in your requests by adding the following header:
-```
-Authorization: Bearer <your_auth_token>
-```
+**Error Response (401 Unauthorized):**
 
-### Endpoints
-
-### Update WhatsApp Status
-
-Updates your WhatsApp status message.
-
-- **URL**: `/wapp/update-status`
-- **Method**: `POST`
-- **Auth required**: Yes (Bearer token)
-- **Content-Type**: `application/json`
-
-#### Request Body
 ```json
 {
-  "text": "Your new status message"
+  "success": false,
+  "error": "Invalid or missing bearer token"
 }
 ```
 
-#### Success Response
-- **Code**: 200 OK
-- **Content**:
+---
+
+### POST `/wapp/update-status`
+
+Updates the WhatsApp account status text.
+
+#### Request
+
+**Content-Type:** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `text` | string | Yes | The new status message to publish |
+
+#### Responses
+
+**Success (200 OK):**
+
 ```json
 {
   "success": true,
@@ -77,9 +84,8 @@ Updates your WhatsApp status message.
 }
 ```
 
-#### Error Response
-- **Code**: 400 Bad Request
-- **Content**:
+**Error (400 Bad Request):**
+
 ```json
 {
   "success": false,
@@ -88,35 +94,34 @@ Updates your WhatsApp status message.
 ```
 
 #### Example
+
 ```bash
-curl -X POST \
-  http://localhost:3000/wapp/update-status \
-  -H 'Authorization: Bearer your_auth_token' \
-  -H 'Content-Type: application/json' \
+curl -X POST "http://localhost:3000/wapp/update-status" \
+  -H "Authorization: Bearer your_auth_token" \
+  -H "Content-Type: application/json" \
   -d '{"text": "Available now!"}'
 ```
 
-### Send WhatsApp Message
+---
 
-Sends a message to a WhatsApp contact or channel.
+### POST `/wapp/send-message`
 
-- **URL**: `/wapp/send-message`
-- **Method**: `POST`
-- **Auth required**: Yes (Bearer token)
-- **Content-Type**: `application/json`
+Sends a message to a WhatsApp user chat or channel.
 
-#### Request Body
-```json
-{
-  "type": "chat",  // "chat" or "channel"
-  "jid": "1234567890@s.whatsapp.net",  // recipient's JID
-  "text": "Your message content"
-}
-```
+#### Request
 
-#### Success Response
-- **Code**: 200 OK
-- **Content**:
+**Content-Type:** `application/json`
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `type` | string | Yes | Either `chat` (direct message) or `channel` |
+| `jid` | string | Yes | The recipient JID (e.g., `1234567890@s.whatsapp.net`) |
+| `text` | string | Yes | Message body to send |
+
+#### Responses
+
+**Success (200 OK):**
+
 ```json
 {
   "success": true,
@@ -124,16 +129,15 @@ Sends a message to a WhatsApp contact or channel.
 }
 ```
 
-#### Error Responses
-- **Code**: 400 Bad Request
-- **Content**:
+**Error (400 Bad Request):**
+
 ```json
 {
   "success": false,
   "error": "Valid message type is required (chat or channel)"
 }
 ```
-or
+
 ```json
 {
   "success": false,
@@ -142,14 +146,18 @@ or
 ```
 
 #### Example
+
 ```bash
-curl -X POST \
-  http://localhost:3000/wapp/send-message \
-  -H 'Authorization: Bearer your_auth_token' \
-  -H 'Content-Type: application/json' \
+curl -X POST "http://localhost:3000/wapp/send-message" \
+  -H "Authorization: Bearer your_auth_token" \
+  -H "Content-Type: application/json" \
   -d '{
     "type": "chat",
     "jid": "1234567890@s.whatsapp.net",
     "text": "Hello from the API!"
   }'
 ```
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
